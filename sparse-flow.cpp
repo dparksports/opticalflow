@@ -15,10 +15,19 @@ Mat readMat(int number) {
     return frame;
 }
 
-int main(int argc, char **argv)
-{
-    int number = 0;
-    Mat old_frame = readMat(number++);
+static string current_filename;
+
+Mat filenameMat() {
+    string filename;
+    cin >> filename;
+    current_filename = filename;
+    Mat frame = imread( filename, IMREAD_COLOR );
+    return frame;
+}
+
+
+int main(int argc, char **argv) {
+    Mat old_frame = filenameMat();
     if ( old_frame.empty() )
     {
         cout << "Could not open or find the image!\n" << endl;
@@ -49,7 +58,7 @@ int main(int argc, char **argv)
 
     while(true){
         Mat frame_gray;
-        Mat frame = readMat(number++);
+        Mat frame = filenameMat();
         if (frame.empty())
             break;
 
@@ -72,10 +81,19 @@ int main(int argc, char **argv)
                 circle(frame, p1[i], 5, colors[i], -1);
             }
         }
+
+        cv::putText(frame,
+                    current_filename,
+                    cv::Point(5,5 * 10 ), // Coordinates
+                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+                    1.0, // Scale. 2.0 = 2x bigger
+                    cv::Scalar(255,255,255), // BGR Color
+                    1 // Line Thickness (Optional)
+                    ); // Anti-alias (Optional)
+
         Mat img;
         add(frame, mask, img);
-
-        imshow("Frame", img);
+        imshow("Flow", img);
 
         int keyboard = waitKey(30);
         if (keyboard == 'q' || keyboard == 27)

@@ -8,34 +8,22 @@
 using namespace cv;
 using namespace std;
 
+Mat readMat(int number) {
+    string path = "snapshot/" + to_string(number);
+    string filename = string(path + ".jpg");
+    Mat frame = imread( filename, IMREAD_COLOR );
+    return frame;
+}
+
 int main(int argc, char **argv)
 {
-    const string about =
-            "This sample demonstrates Lucas-Kanade Optical Flow calculation.\n"
-            "The example file can be downloaded from:\n"
-            "  https://www.bogotobogo.com/python/OpenCV_Python/images/mean_shift_tracking/slow_traffic_small.mp4";
-    const string keys =
-            "{ h help |      | print this help message }"
-            "{ @image |<none>| path to image file }";
-    CommandLineParser parser(argc, argv, keys);
-    parser.about(about);
-    if (parser.has("help"))
+    int number = 0;
+    Mat old_frame = readMat(number++);
+    if ( old_frame.empty() )
     {
-        parser.printMessage();
-        return 0;
-    }
-    string filename = parser.get<string>("@image");
-    if (!parser.check())
-    {
-        parser.printErrors();
-        return 0;
-    }
-
-    VideoCapture capture(filename);
-    if (!capture.isOpened()){
-        //error in opening the video input
-        cerr << "Unable to open file!" << endl;
-        return 0;
+        cout << "Could not open or find the image!\n" << endl;
+        cout << "Usage: " << argv[0] << " <Input image>" << endl;
+        return -1;
     }
 
     // Create some random colors
@@ -49,11 +37,10 @@ int main(int argc, char **argv)
         colors.push_back(Scalar(r,g,b));
     }
 
-    Mat old_frame, old_gray;
+    Mat old_gray;
     vector<Point2f> p0, p1;
 
     // Take first frame and find corners in it
-    capture >> old_frame;
     cvtColor(old_frame, old_gray, COLOR_BGR2GRAY);
     goodFeaturesToTrack(old_gray, p0, 100, 0.3, 7, Mat(), 7, false, 0.04);
 
@@ -61,11 +48,11 @@ int main(int argc, char **argv)
     Mat mask = Mat::zeros(old_frame.size(), old_frame.type());
 
     while(true){
-        Mat frame, frame_gray;
-
-        capture >> frame;
+        Mat frame_gray;
+        Mat frame = readMat(number++);
         if (frame.empty())
             break;
+
         cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
 
         // calculate optical flow

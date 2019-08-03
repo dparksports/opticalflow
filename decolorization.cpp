@@ -27,8 +27,7 @@ int main( int argc, char *argv[] )
 {
     string filename;
     cin >> filename;
-    CommandLineParser parser( argc, argv, "{@input | ../204539.jpg | input image}" );
-    Mat src = imread( parser.get<String>( "@input" ), IMREAD_COLOR );
+    Mat src = imread( filename, IMREAD_COLOR );
     if ( src.empty() )
     {
         cout << "Could not open or find the image!\n" << endl;

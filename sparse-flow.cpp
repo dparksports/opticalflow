@@ -46,13 +46,14 @@ int main( int argc, char** argv )
     const int MAX_COUNT = 500;
     bool needToInit = false;
     bool nightMode = false;
+    bool deviated = false;
     help();
 
     namedWindow( "LK Demo", 1 );
     setMouseCallback( "LK Demo", onMouse, 0 );
     Mat gray, prevGray, image, frame;
     vector<Point2f> points[2];
-    for(;;) {
+    while(! deviated) {
         Mat frame = filenameMat();
         if( frame.empty() )
             break;
@@ -90,18 +91,20 @@ int main( int argc, char** argv )
                     continue;
                 points[1][k++] = points[1][i];
                 circle( image, points[1][i], 3, Scalar(0,255,0), -1, 8);
-
-                cv::putText(image,
-                            current_filename,
-                            cv::Point(5,image.size().height - (5 * 10) ), // Coordinates
-                            cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
-                            1.0, // Scale. 2.0 = 2x bigger
-                            cv::Scalar(255,255,255), // BGR Color
-                            1 // Line Thickness (Optional)
-                ); // Anti-alias (Optional)
             }
             points[1].resize(k);
         }
+
+        cv::putText(image,
+                    current_filename,
+                    cv::Point(5,image.size().height - (5 * 10) ), // Coordinates
+                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+                    1.0, // Scale. 2.0 = 2x bigger
+                    cv::Scalar(255,255,255), // BGR Color
+                    1 // Line Thickness (Optional)
+        ); // Anti-alias (Optional)
+
+
         if( addRemovePt && points[1].size() < (size_t)MAX_COUNT )
         {
             vector<Point2f> tmp;
@@ -111,12 +114,6 @@ int main( int argc, char** argv )
             addRemovePt = false;
         }
         needToInit = false;
-
-
-//
-//        // Create a mask image for drawing purposes
-//        Mat mask = Mat::zeros(frame.size(), frame.type());
-//        add(image, mask, image);
 
         imshow("LK Demo", image);
         char c = (char)waitKey(10);

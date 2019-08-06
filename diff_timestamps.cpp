@@ -23,31 +23,6 @@
 
 using namespace std;
 
-
-
-int parseIndex(string str) {
-    stringstream ss(str);
-    string token;
-
-    getline(ss, token, '-');
-    getline(ss, token, '-');
-    stringstream wordstream(token);
-
-    int number;
-    wordstream >> number;
-    return number;
-}
-
-// Make a tm structure representing this date
-tm make_tm(int year, int month, int day, int hour, int minute, int second)
-{
-    tm tm = {0};
-    tm.tm_year = year - 1900; // years count from 1900
-    tm.tm_mon = month - 1;    // months count from January=0
-    tm.tm_mday = day;         // days count from 1
-    return tm;
-}
-
 string parseTimestamp(string str) {
     stringstream ss(str);
     string index, year, month, date, hour, minute, second;
@@ -148,8 +123,6 @@ int main(int argc, const char *argv[]) {
 
     sort(timestamps.begin(), timestamps.end());
 
-
-    const int seconds_per_day = 60*60*24;
     time_t p_time = time(0);
 
     for (int i = 0; i < timestamps.size(); ++i) {
@@ -159,10 +132,9 @@ int main(int argc, const char *argv[]) {
         tm c_tm = parseTM(filename);
         time_t c_time = mktime(&c_tm);
         time_t difference = c_time - p_time;
-        int diff = difference;
         p_time = c_time;
 
-        cout << timestamp  << " = " << diff << " = " << filename << endl;
+        cout << timestamp  << " = " << difference << " = " << filename << endl;
     }
     return 0;
 }

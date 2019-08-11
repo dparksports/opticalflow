@@ -41,14 +41,94 @@ static void on_high_V_thresh_trackbar(int, void *)
 }
 
 using namespace std;
-static string current_filename;
+
+string parseTimestamp(string str) {
+    stringstream ss(str);
+    string index, year, month, date, hour, minute, second;
+    int iyear, imonth, idate, ihour, iminute, isecond;
+
+
+    getline(ss, index, '-');
+    getline(ss, index, '-');
+    stringstream wordstream1(index);
+
+
+    getline(ss, year, '-');
+    stringstream wordstream2(year);
+    wordstream2 >> iyear;
+
+    getline(ss, month, '-');
+    stringstream wordstream3(month);
+    wordstream3 >> imonth;
+
+    getline(ss, date, '_');
+    stringstream wordstream4(date);
+    wordstream4 >> idate;
+
+    getline(ss, hour, '-');
+    stringstream wordstream5(hour);
+    wordstream5 >> ihour;
+
+    getline(ss, minute, '-');
+    stringstream wordstream6(minute);
+    wordstream6 >> iminute;
+
+    getline(ss, second, '.');
+    stringstream wordstream7(second);
+    wordstream7 >> isecond;
+
+    string timestamp = month + "/" + date + "-" + hour + ":" + minute + ":" + second;
+    return timestamp;
+}
+
+int parseIndex(string str) {
+    stringstream ss(str);
+    string token;
+
+    getline(ss, token, '-');
+    getline(ss, token, '-');
+    stringstream wordstream(token);
+
+    int number;
+    wordstream >> number;
+    return number;
+}
+
+static string current_index;
+static string current_timestamp;
+
 Mat filenameMat() {
     string filename;
     cin >> filename;
+
+    int index = parseIndex(filename);
+    current_timestamp = parseTimestamp(filename);
+    current_index= to_string(index);
+
     filename = "/media/pose/HFS16/190630/" + filename;
-    current_filename = filename;
     Mat frame = imread( filename, IMREAD_COLOR );
     return frame;
+}
+
+void countHSV(Mat& src) {
+    Size newSize = Size( src.cols/2, src.rows/2 );
+    pyrDown( src, src, newSize);
+
+    int count;
+    int HSVcomponent = 2;
+    for (int i = 0; i < src.rows; ++i) {
+        for (int j = 0; j < src.cols; ++j) {
+            Vec3b element = src.at<Vec3b>(i,j);
+            int value = element[HSVcomponent];
+            if (value > 50) {
+                count++;
+            }
+        }
+    }
+
+    cout << src.size() << endl;
+//    cout << src << endl;
+    cout << current_index << ":" << current_timestamp << ": count:" << count << endl;
 }
 
 int main(int argc, char* argv[])
@@ -63,42 +143,69 @@ int main(int argc, char* argv[])
     createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
     createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
     Mat frame, frame_HSV, frame_threshold;
+    Mat frameResized;
     while (true) {
         frame = filenameMat();
+        Size newSize = Size( frame.cols/2, frame.rows/2 );
+        pyrDown( frame, frame, newSize);
+        Size newSize2 = Size( frame.cols/2, frame.rows/2 );
+        pyrDown( frame, frame, newSize2);
+
+        Size newSize3 = Size( frame.cols/2, frame.rows/2 );
+        pyrDown( frame, frameResized, newSize3);
+
+//        Size newSize4 = Size( frame.cols/2, frame.rows/2 );
+//        pyrDown( frameResized, frameResized, newSize4);
+
         if(frame.empty())
         {
             break;
         }
         // Convert from BGR to HSV colorspace
-        cvtColor(frame, frame_HSV, COLOR_BGR2HSV);
+        cvtColor(frameResized, frame_HSV, COLOR_BGR2HSV);
         // Detect the object based on HSV Range Values
         inRange(frame_HSV, Scalar(low_H, low_S, low_V), Scalar(high_H, high_S, high_V), frame_threshold);
 
         cv::putText(frame,
-                    current_filename,
-                    cv::Point(5,5 * 10), // Coordinates
+                    current_index,
+                    cv::Point(5,5 * 5), // Coordinates
                     cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
                     1.0, // Scale. 2.0 = 2x bigger
                     cv::Scalar(255,255,255), // BGR Color
                     1 // Line Thickness (Optional)
         );
 
-        cv::putText(frame_threshold,
-                    current_filename,
-                    cv::Point(5,5 * 10), // Coordinates
+        cv::putText(frame,
+                    current_timestamp,
+                    cv::Point(5,frame.size().height - (5*10)), // Coordinates
                     cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
                     1.0, // Scale. 2.0 = 2x bigger
                     cv::Scalar(255,255,255), // BGR Color
                     1 // Line Thickness (Optional)
         );
+
+//        cv::putText(frame_threshold,
+//                    current_timestamp,
+//                    cv::Point(5,5 * 10), // Coordinates
+//                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+//                    0.5, // Scale. 2.0 = 2x bigger
+//                    cv::Scalar(255,255,255), // BGR Color
+//                    1 // Line Thickness (Optional)
+//        );
 
         // Show the frames
         imshow(window_capture_name, frame);
         imshow(window_detection_name, frame_threshold);
+
+        countHSV(frame_threshold);
+
         char key = (char) waitKey(30);
         if (key == 'q' || key == 27)
         {
             break;
+        }
+        else if( key == 'd' ) {
+            countHSV(frame_threshold);
         }
     }
     return 0;

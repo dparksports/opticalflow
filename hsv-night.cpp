@@ -118,6 +118,7 @@ Mat filenameMat() {
 
 static int current_average;
 static int pcount;
+static bool showWinddow = true;
 
 int countHSV(Mat& src) {
     Size newSize = Size( src.cols/2, src.rows/2 );
@@ -159,6 +160,7 @@ int countHSV(Mat& src) {
         cout << current_filename << "   " << count << "   " << per << " #" << endl;
 //        printf("%.1f", percentage);
 //        cout << endl;
+        showWinddow = true;
     } else {
         float percentage = diff / (pcount * 1.0);
         int per = percentage * 100;
@@ -178,11 +180,12 @@ int calculate_average(vector<int> window) {
     return sum / window.size();
 }
 
+
 int main(int argc, char* argv[]) {
-    bool showWinddow = true;
     vector<int> moving_average(4,0);
     int window_index = 0;
     pcount = 0;
+    showWinddow = true;
 
     namedWindow(window_capture_name);
     namedWindow(window_detection_name);
@@ -245,10 +248,6 @@ int main(int argc, char* argv[]) {
                     1 // Line Thickness (Optional)
         );
 
-        if (showWinddow) {
-            imshow(window_capture_name, frame);
-            imshow(window_detection_name, frame_threshold);
-        }
 
         int count = countHSV(frame_threshold);
         window_index = window_index % moving_average.size();
@@ -256,6 +255,13 @@ int main(int argc, char* argv[]) {
         window_index++;
 
         current_average = calculate_average(moving_average);
+
+        if (showWinddow) {
+            imshow(window_capture_name, frame);
+            imshow(window_detection_name, frame_threshold);
+            showWinddow = false;
+        }
+
 
         char key = (char) waitKey(30);
         if (key == 'q' || key == 27)

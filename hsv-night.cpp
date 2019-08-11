@@ -119,6 +119,7 @@ Mat filenameMat() {
 static int current_average;
 static int pcount;
 static bool showWinddow = true;
+static int hsv_index = 0;
 
 int countHSV(Mat& src) {
     Size newSize = Size( src.cols/2, src.rows/2 );
@@ -138,33 +139,37 @@ int countHSV(Mat& src) {
         }
     }
 
-//    cout << src.size() << endl;
-//    cout << src << endl;
-//    cout << current_timestamp << " : " << current_index << " : count: " << count << endl;
-
-    if (count > 54) {
-//        cout << current_filename << "   " << count << endl;
-//        char key = (char) waitKey( 1000 * 5);
-    }
-
     if (pcount ==  0) {
         pcount = count;
     }
-    int diff = count - pcount;
-    diff = abs(diff);
 
-    float boundary = pcount * (1/8.0);
-    if (diff > boundary) {
-        float percentage = diff / (pcount * 1.0);
-        int per = percentage * 100;
-        cout << current_filename << "   " << count << "   " << per << " #" << endl;
+    if (count > 54) {
+        int diff = count - pcount;
+        diff = abs(diff);
+
+        float boundary = pcount * (1/4.0);
+        if (diff > boundary) {
+            float percentage = diff / (pcount * 1.0);
+            int per = percentage * 100;
+            cout << current_filename << "   " << count << "   " << per << " #" << endl;
 //        printf("%.1f", percentage);
 //        cout << endl;
-        showWinddow = true;
+            showWinddow = true;
+        } else {
+            hsv_index = hsv_index % 720;
+            if (hsv_index == 0) {
+                float percentage = diff / (pcount * 1.0);
+                int per = percentage * 100;
+                cout << current_filename << "   " << count << "   " << per << endl;
+            }
+            hsv_index++;
+        }
     } else {
-        float percentage = diff / (pcount * 1.0);
-        int per = percentage * 100;
-        cout << current_filename << "   " << count << "   " << per << endl;
+        hsv_index = hsv_index % 120;
+        if (hsv_index == 0) {
+            cout << current_filename << "   " << count << "   " << endl;
+        }
+        hsv_index++;
     }
 
     pcount = count;
@@ -185,6 +190,7 @@ int main(int argc, char* argv[]) {
     vector<int> moving_average(4,0);
     int window_index = 0;
     pcount = 0;
+    hsv_index = 0;
     showWinddow = true;
 
     namedWindow(window_capture_name);

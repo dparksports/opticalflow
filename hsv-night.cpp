@@ -96,6 +96,7 @@ int parseIndex(string str) {
 
 static string current_index;
 static string current_timestamp;
+static string current_filename;
 
 Mat filenameMat() {
     string filename;
@@ -104,9 +105,10 @@ Mat filenameMat() {
     int index = parseIndex(filename);
     current_timestamp = parseTimestamp(filename);
     current_index= to_string(index);
+    current_filename = filename;
 
-    filename = "/media/pose/HFS16/190630/" + filename;
-    Mat frame = imread( filename, IMREAD_COLOR );
+    string filepath = "/media/pose/HFS16/190630/" + filename;
+    Mat frame = imread( filepath, IMREAD_COLOR );
     return frame;
 }
 
@@ -126,9 +128,14 @@ void countHSV(Mat& src) {
         }
     }
 
-    cout << src.size() << endl;
+//    cout << src.size() << endl;
 //    cout << src << endl;
-    cout << current_index << ":" << current_timestamp << ": count:" << count << endl;
+//    cout << current_timestamp << " : " << current_index << " : count: " << count << endl;
+
+    if (count > 12) {
+        cout << current_filename << "   " << count << endl;
+//        char key = (char) waitKey( 1000 * 5);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -151,8 +158,8 @@ int main(int argc, char* argv[])
         Size newSize2 = Size( frame.cols/2, frame.rows/2 );
         pyrDown( frame, frame, newSize2);
 
-        Size newSize3 = Size( frame.cols/2, frame.rows/2 );
-        pyrDown( frame, frameResized, newSize3);
+//        Size newSize3 = Size( frame.cols/2, frame.rows/2 );
+//        pyrDown( frame, frameResized, newSize3);
 
 //        Size newSize4 = Size( frame.cols/2, frame.rows/2 );
 //        pyrDown( frameResized, frameResized, newSize4);
@@ -162,7 +169,7 @@ int main(int argc, char* argv[])
             break;
         }
         // Convert from BGR to HSV colorspace
-        cvtColor(frameResized, frame_HSV, COLOR_BGR2HSV);
+        cvtColor(frame, frame_HSV, COLOR_BGR2HSV);
         // Detect the object based on HSV Range Values
         inRange(frame_HSV, Scalar(low_H, low_S, low_V), Scalar(high_H, high_S, high_V), frame_threshold);
 
@@ -177,7 +184,7 @@ int main(int argc, char* argv[])
 
         cv::putText(frame,
                     current_timestamp,
-                    cv::Point(5,frame.size().height - (5*10)), // Coordinates
+                    cv::Point(5,frame.size().height - (5*5)), // Coordinates
                     cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
                     1.0, // Scale. 2.0 = 2x bigger
                     cv::Scalar(255,255,255), // BGR Color

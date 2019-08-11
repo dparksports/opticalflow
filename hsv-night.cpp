@@ -1,6 +1,8 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include <iostream>
+#include <list>
+
 using namespace cv;
 
 const int max_value_H = 360/2;
@@ -98,6 +100,8 @@ static string current_index;
 static string current_timestamp;
 static string current_filename;
 
+void calculate_average(list<int> list);
+
 Mat filenameMat() {
     string filename;
     cin >> filename;
@@ -107,14 +111,19 @@ Mat filenameMat() {
     current_index= to_string(index);
     current_filename = filename;
 
-    string filepath = "/media/pose/HFS16/190630/" + filename;
+    string filepath = "/media/pose/HFS630/190630/" + filename;
     Mat frame = imread( filepath, IMREAD_COLOR );
     return frame;
 }
 
-void countHSV(Mat& src) {
+static int current_average;
+static int pcount;
+
+int countHSV(Mat& src) {
     Size newSize = Size( src.cols/2, src.rows/2 );
     pyrDown( src, src, newSize);
+//    Size newSize2 = Size( src.cols/2, src.rows/2 );
+//    pyrDown( src, src, newSize2);
 
     int count;
     int HSVcomponent = 2;
@@ -132,14 +141,45 @@ void countHSV(Mat& src) {
 //    cout << src << endl;
 //    cout << current_timestamp << " : " << current_index << " : count: " << count << endl;
 
-    if (count > 12) {
+    if (count > 54) {
         cout << current_filename << "   " << count << endl;
 //        char key = (char) waitKey( 1000 * 5);
     }
+
+    if (pcount ==  0) {
+        pcount = count;
+    }
+    int diff = count - pcount;
+    diff = abs(diff);
+
+    float boundary = pcount * (1/4.0);
+    if (diff > boundary) {
+        float percentage = diff / (pcount * 1.0);
+        int per = percentage * 100;
+        cout << current_filename << "   " << count << " # " << per << endl;
+//        printf("%.1f", percentage);
+//        cout << endl;
+    }
+
+    pcount = count;
+    return count;
 }
 
-int main(int argc, char* argv[])
-{
+int calculate_average(vector<int> window) {
+    int sum = 0;
+    for (int i = 0; i < window.size(); ++i) {
+        sum += window[i];
+    }
+
+    return sum / window.size();
+}
+
+int main(int argc, char* argv[]) {
+    bool showWinddow = true;
+    vector<int> moving_average(4,0);
+    int window_index = 0;
+    pcount = 0;
+
     namedWindow(window_capture_name);
     namedWindow(window_detection_name);
     // Trackbars to set thresholds for HSV values
@@ -153,6 +193,10 @@ int main(int argc, char* argv[])
     Mat frameResized;
     while (true) {
         frame = filenameMat();
+        if(frame.empty()) {
+            break;
+        }
+
         Size newSize = Size( frame.cols/2, frame.rows/2 );
         pyrDown( frame, frame, newSize);
         Size newSize2 = Size( frame.cols/2, frame.rows/2 );
@@ -164,10 +208,7 @@ int main(int argc, char* argv[])
 //        Size newSize4 = Size( frame.cols/2, frame.rows/2 );
 //        pyrDown( frameResized, frameResized, newSize4);
 
-        if(frame.empty())
-        {
-            break;
-        }
+
         // Convert from BGR to HSV colorspace
         cvtColor(frame, frame_HSV, COLOR_BGR2HSV);
         // Detect the object based on HSV Range Values
@@ -191,28 +232,37 @@ int main(int argc, char* argv[])
                     1 // Line Thickness (Optional)
         );
 
-//        cv::putText(frame_threshold,
-//                    current_timestamp,
-//                    cv::Point(5,5 * 10), // Coordinates
-//                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
-//                    0.5, // Scale. 2.0 = 2x bigger
-//                    cv::Scalar(255,255,255), // BGR Color
-//                    1 // Line Thickness (Optional)
-//        );
+        cv::putText(frame_threshold,
+                    current_timestamp,
+                    cv::Point(5,5 * 10), // Coordinates
+                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+                    1.0, // Scale. 2.0 = 2x bigger
+                    cv::Scalar(255,255,255), // BGR Color
+                    1 // Line Thickness (Optional)
+        );
 
-        // Show the frames
-        imshow(window_capture_name, frame);
-        imshow(window_detection_name, frame_threshold);
+        if (showWinddow) {
+            imshow(window_capture_name, frame);
+            imshow(window_detection_name, frame_threshold);
+        }
 
-        countHSV(frame_threshold);
+        int count = countHSV(frame_threshold);
+        window_index = window_index % moving_average.size();
+        moving_average[window_index] = count;
+        window_index++;
+
+        current_average = calculate_average(moving_average);
 
         char key = (char) waitKey(30);
         if (key == 'q' || key == 27)
         {
             break;
         }
+        else if( key == 's' ) {
+            showWinddow = ! showWinddow;
+//            cout << "showWindow:" << to_string(showWinddow);
+        }
         else if( key == 'd' ) {
-            countHSV(frame_threshold);
         }
     }
     return 0;

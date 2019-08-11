@@ -153,7 +153,7 @@ int countHSV(Mat& src) {
     int diff = count - pcount;
     diff = abs(diff);
 
-    float boundary = pcount * (1/10.0);
+    float boundary = pcount * (1/8.0);
     if (diff > boundary) {
         float percentage = diff / (pcount * 1.0);
         int per = percentage * 100;
@@ -189,13 +189,16 @@ int main(int argc, char* argv[]) {
 
     namedWindow(window_capture_name);
     namedWindow(window_detection_name);
+
     // Trackbars to set thresholds for HSV values
 //    createTrackbar("Low H", window_detection_name, &low_H, max_value_H, on_low_H_thresh_trackbar);
 //    createTrackbar("High H", window_detection_name, &high_H, max_value_H, on_high_H_thresh_trackbar);
 //    createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
 //    createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
+
     createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
     createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
+
     Mat frame, frame_HSV, frame_threshold;
     Mat frameResized;
     while (true) {
@@ -239,22 +242,22 @@ int main(int argc, char* argv[]) {
                     1 // Line Thickness (Optional)
         );
 
-        cv::putText(frame_threshold,
-                    current_timestamp,
-                    cv::Point(5,5 * 10), // Coordinates
-                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
-                    1.0, // Scale. 2.0 = 2x bigger
-                    cv::Scalar(255,255,255), // BGR Color
-                    1 // Line Thickness (Optional)
-        );
+//        cv::putText(frame_threshold,
+//                    current_timestamp,
+//                    cv::Point(5,5 * 10), // Coordinates
+//                    cv::FONT_HERSHEY_COMPLEX_SMALL, // Font
+//                    1.0, // Scale. 2.0 = 2x bigger
+//                    cv::Scalar(255,255,255), // BGR Color
+//                    1 // Line Thickness (Optional)
+//        );
 
 
         int count = countHSV(frame_threshold);
-        window_index = window_index % moving_average.size();
-        moving_average[window_index] = count;
-        window_index++;
-
-        current_average = calculate_average(moving_average);
+//        window_index = window_index % moving_average.size();
+//        moving_average[window_index] = count;
+//        window_index++;
+//
+//        current_average = calculate_average(moving_average);
 
         if (showWinddow) {
             imshow(window_capture_name, frame);

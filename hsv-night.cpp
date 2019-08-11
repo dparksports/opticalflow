@@ -142,7 +142,7 @@ int countHSV(Mat& src) {
 //    cout << current_timestamp << " : " << current_index << " : count: " << count << endl;
 
     if (count > 54) {
-        cout << current_filename << "   " << count << endl;
+//        cout << current_filename << "   " << count << endl;
 //        char key = (char) waitKey( 1000 * 5);
     }
 
@@ -152,13 +152,17 @@ int countHSV(Mat& src) {
     int diff = count - pcount;
     diff = abs(diff);
 
-    float boundary = pcount * (1/4.0);
+    float boundary = pcount * (1/10.0);
     if (diff > boundary) {
         float percentage = diff / (pcount * 1.0);
         int per = percentage * 100;
-        cout << current_filename << "   " << count << " # " << per << endl;
+        cout << current_filename << "   " << count << "   " << per << " #" << endl;
 //        printf("%.1f", percentage);
 //        cout << endl;
+    } else {
+        float percentage = diff / (pcount * 1.0);
+        int per = percentage * 100;
+        cout << current_filename << "   " << count << "   " << per << endl;
     }
 
     pcount = count;
@@ -183,10 +187,10 @@ int main(int argc, char* argv[]) {
     namedWindow(window_capture_name);
     namedWindow(window_detection_name);
     // Trackbars to set thresholds for HSV values
-    createTrackbar("Low H", window_detection_name, &low_H, max_value_H, on_low_H_thresh_trackbar);
-    createTrackbar("High H", window_detection_name, &high_H, max_value_H, on_high_H_thresh_trackbar);
-    createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
-    createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
+//    createTrackbar("Low H", window_detection_name, &low_H, max_value_H, on_low_H_thresh_trackbar);
+//    createTrackbar("High H", window_detection_name, &high_H, max_value_H, on_high_H_thresh_trackbar);
+//    createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
+//    createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
     createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
     createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
     Mat frame, frame_HSV, frame_threshold;

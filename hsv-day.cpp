@@ -117,12 +117,14 @@ static string current_filename;
 void calculate_average(list<int> list);
 
 Mat filenameMat() {
+    string path;
+    cin >> path;
     string filename, line;
     cin >> line;
 
 //    filename = parsePounds(line);
     current_filename = line;
-    string filepath = "/media/pose/HFS630/190630/" + line;
+    string filepath = path + line;
     Mat frame = imread( filepath, IMREAD_COLOR );
 
     int index = parseIndex(line);

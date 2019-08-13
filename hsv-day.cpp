@@ -117,14 +117,12 @@ static string current_filename;
 void calculate_average(list<int> list);
 
 Mat filenameMat() {
-    string path;
-    cin >> path;
     string filename, line;
     cin >> line;
 
 //    filename = parsePounds(line);
     current_filename = line;
-    string filepath = path + line;
+    string filepath = current_path + filename;
     Mat frame = imread( filepath, IMREAD_COLOR );
 
     int index = parseIndex(line);
@@ -199,10 +197,12 @@ int countHSV(Mat& src) {
     return count;
 }
 
+static string current_path;
 int main(int argc, char* argv[]) {
     pcount = 0;
     hsv_index = 0;
     showWinddow = true;
+    cin >> current_path;
 
     namedWindow(window_capture_name);
     namedWindow(window_detection_name);

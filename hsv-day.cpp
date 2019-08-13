@@ -113,22 +113,24 @@ int parseIndex(string str) {
 static string current_index;
 static string current_timestamp;
 static string current_filename;
+static string current_path;
 
 void calculate_average(list<int> list);
 
 Mat filenameMat() {
-    string filename, line;
-    cin >> line;
+    string filename;
+    cin >> filename;
 
 //    filename = parsePounds(line);
-    current_filename = line;
+    current_filename = filename;
     string filepath = current_path + filename;
     Mat frame = imread( filepath, IMREAD_COLOR );
 
-    int index = parseIndex(line);
-    current_timestamp = parseTimestamp(line);
+    int index = parseIndex(filename);
+    current_timestamp = parseTimestamp(filename);
     current_index = to_string(index);
 
+    string line;
     cin >> line;
     cin >> line;
     cin >> line;
@@ -197,7 +199,6 @@ int countHSV(Mat& src) {
     return count;
 }
 
-static string current_path;
 int main(int argc, char* argv[]) {
     pcount = 0;
     hsv_index = 0;
